@@ -5,7 +5,6 @@ import re
 from hashlib import md5
 from random import randint
 import struct
-import httplib2
 import time
 from urllib import unquote, quote
 from Cookie import SimpleCookie, CookieError
@@ -17,6 +16,8 @@ try:
     from mod_python.util import parse_qsl
 except ImportError:
     from cgi import parse_qsl
+
+import requests
 
 VERSION = "4.4sh"
 COOKIE_NAME = "__utmmobile"
@@ -112,21 +113,11 @@ def send_request_to_google_analytics(utm_url, environ):
   // If request containg utmdebug parameter, exceptions encountered
   // communicating with Google Analytics are thown.
     """
-    http = httplib2.Http()
-    try:
-        resp, content = http.request(utm_url,
-                                     "GET",
-                                     headers={'User-Agent': environ.get('HTTP_USER_AGENT', 'Unknown'),
-                                              'Accepts-Language:': environ.get("HTTP_ACCEPT_LANGUAGE",'')}
-                                     )
-        # dbgMsg("success")
-    except httplib2.HttpLib2Error, e:
-        errMsg("fail: %s" % utm_url)
-        if environ['GET'].get('utmdebug'):
-            raise Exception("Error opening: %s" % utm_url)
-        else:
-            pass
-
+    response = requests.get(
+        utm_url,
+        headers={
+            'User-Agent': environ.get('HTTP_USER_AGENT', 'Unknown'),
+            'Accepts-Language:': environ.get("HTTP_ACCEPT_LANGUAGE",'')})
 
 def parse_cookie(cookie):
     """ borrowed from django.http """
