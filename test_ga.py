@@ -17,5 +17,4 @@ def test_track_page_view():
     res = ga.track_page_view(
         url_args=url_args,
         cookies=dict(),
-        domain="www.picturehouses.co.uk",
         environ=environ)

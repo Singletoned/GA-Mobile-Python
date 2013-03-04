@@ -136,7 +136,7 @@ def parse_cookie(cookie):
         cookiedict[key] = c.get(key).value
     return cookiedict
 
-def track_page_view(url_args, cookies, domain, environ):
+def track_page_view(url_args, cookies, environ):
     """
     // Track a page view, updates all the cookies and campaign tracker,
     // makes a server side request to Google Analytics and writes the transparent
@@ -181,7 +181,7 @@ def track_page_view(url_args, cookies, domain, environ):
         utm_url = UTM_GIF_LOCATION + "?" + \
                 "utmwv=" + VERSION + \
                 "&utmn=" + get_random_number() + \
-                "&utmhn=" + quote(domain) + \
+                "&utmhn=" + quote(url_args.get('utmhn', '')) + \
                 "&utmsr=" + url_args.get('utmsr', '') + \
                 "&utme=" + url_args.get('utme', '') + \
                 "&utmr=" + quote(document_referer) + \
