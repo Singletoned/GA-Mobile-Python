@@ -13,5 +13,5 @@ setup(name='mobile_google_analytics',
       author_email='',
       url='https://github.com/b1tr0t/Google-Analytics-for-Mobile--python-',
       packages=['ga_app',],
-      py_modules=['ga',],
+      py_modules=['google_analytics_mobile',],
       install_requires=requires)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import ga
+import google_analytics_mobile
 
 
 def test_track_page_view():
-    ga.UTM_GIF_LOCATION = "http://www.example.com"
+    google_analytics_mobile.UTM_GIF_LOCATION = "http://www.example.com"
     url_args = dict(
         utmn="1234567890",
         utmhn="www.picturehouses.co.uk",
@@ -14,7 +14,7 @@ def test_track_page_view():
         utmac="UA-12345678-3")
     environ = dict(
         HTTP_USER_AGENT="blah")
-    res = ga.track_page_view(
+    res = google_analytics_mobile.track_page_view(
         url_args=url_args,
         cookies=dict(),
         environ=environ)
