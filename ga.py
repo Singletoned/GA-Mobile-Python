@@ -8,7 +8,6 @@ import struct
 import time
 from urllib import unquote, quote
 from Cookie import SimpleCookie, CookieError
-from messaging import stdMsg, dbgMsg, errMsg, setDebugging
 import uuid
 
 try:
