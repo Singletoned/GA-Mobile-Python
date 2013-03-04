@@ -4,6 +4,7 @@ import ga
 
 
 def test_track_page_view():
+    ga.UTM_GIF_LOCATION = "http://www.example.com"
     url_args = dict(
         utmn="1234567890",
         utmhn="www.picturehouses.co.uk",

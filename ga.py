@@ -22,6 +22,8 @@ VERSION = "4.4sh"
 COOKIE_NAME = "__utmmobile"
 COOKIE_PATH = "/"
 COOKIE_USER_PERSISTENCE = 63072000
+UTM_GIF_LOCATION = "http://www.google-analytics.com/__utm.gif"
+
 
 GIF_DATA = reduce(lambda x,y: x + struct.pack('B', y),
                   [0x47,0x49,0x46,0x38,0x39,0x61,
@@ -172,13 +174,11 @@ def track_page_view(url_args, cookies, domain, environ):
     morsel['expires'] = time.strftime('%a, %d-%b-%Y %H:%M:%S %Z', time_tup)
     morsel['path'] = COOKIE_PATH
 
-    utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-
     for utmac in [account, x_utmac]:
         if not utmac:
             continue # ignore empty utmacs
         # // Construct the gif hit url.
-        utm_url = utm_gif_location + "?" + \
+        utm_url = UTM_GIF_LOCATION + "?" + \
                 "utmwv=" + VERSION + \
                 "&utmn=" + get_random_number() + \
                 "&utmhn=" + quote(domain) + \
