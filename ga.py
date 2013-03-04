@@ -1,5 +1,5 @@
 """
-Python implementation of ga.php.  
+Python implementation of ga.php.
 """
 import re
 from hashlib import md5
@@ -23,31 +23,31 @@ COOKIE_NAME = "__utmmobile"
 COOKIE_PATH = "/"
 COOKIE_USER_PERSISTENCE = 63072000
 
-GIF_DATA = reduce(lambda x,y: x + struct.pack('B', y), 
+GIF_DATA = reduce(lambda x,y: x + struct.pack('B', y),
                   [0x47,0x49,0x46,0x38,0x39,0x61,
                    0x01,0x00,0x01,0x00,0x80,0x00,
                    0x00,0x00,0x00,0x00,0xff,0xff,
                    0xff,0x21,0xf9,0x04,0x01,0x00,
                    0x00,0x00,0x00,0x2c,0x00,0x00,
-                   0x00,0x00,0x01,0x00,0x01,0x00, 
+                   0x00,0x00,0x01,0x00,0x01,0x00,
                    0x00,0x02,0x01,0x44,0x00,0x3b], '')
 
 # WHITE GIF:
-# 47 49 46 38 39 61 
-# 01 00 01 00 80 ff 
-# 00 ff ff ff 00 00 
-# 00 2c 00 00 00 00 
-# 01 00 01 00 00 02 
-# 02 44 01 00 3b                                       
+# 47 49 46 38 39 61
+# 01 00 01 00 80 ff
+# 00 ff ff ff 00 00
+# 00 2c 00 00 00 00
+# 01 00 01 00 00 02
+# 02 44 01 00 3b
 
 # TRANSPARENT GIF:
-# 47 49 46 38 39 61 
-# 01 00 01 00 80 00 
-# 00 00 00 00 ff ff 
-# ff 21 f9 04 01 00 
-# 00 00 00 2c 00 00 
-# 00 00 01 00 01 00 
-# 00 02 01 44 00 3b                  
+# 47 49 46 38 39 61
+# 01 00 01 00 80 00
+# 00 00 00 00 ff ff
+# ff 21 f9 04 01 00
+# 00 00 00 2c 00 00
+# 00 00 01 00 01 00
+# 00 02 01 44 00 3b
 
 def get_ip(remote_address):
     # dbgMsg("remote_address: " + str(remote_address))
@@ -87,15 +87,15 @@ def write_gif_data():
     """
     // Writes the bytes of a 1x1 transparent gif into the response.
 
-    Returns a dictionary with the following values: 
-    
+    Returns a dictionary with the following values:
+
     { 'response_code': '200 OK',
       'response_headers': [(Header_key, Header_value), ...]
       'response_body': 'binary data'
     }
     """
-    response = {'response_code': '204 No Content', 
-                'response_headers': [('Content-Type', 'image/gif'),                                     
+    response = {'response_code': '204 No Content',
+                'response_headers': [('Content-Type', 'image/gif'),
                                      ('Cache-Control', 'private, no-cache, no-cache=Set-Cookie, proxy-revalidate'),
                                      ('Pragma', 'no-cache'),
                                      ('Expires', 'Wed, 17 Sep 1975 21:32:10 GMT'),
@@ -110,24 +110,24 @@ def send_request_to_google_analytics(utm_url, environ):
   // Make a tracking request to Google Analytics from this server.
   // Copies the headers from the original request to the new one.
   // If request containg utmdebug parameter, exceptions encountered
-  // communicating with Google Analytics are thown.    
+  // communicating with Google Analytics are thown.
     """
-    http = httplib2.Http()    
+    http = httplib2.Http()
     try:
-        resp, content = http.request(utm_url, 
-                                     "GET", 
+        resp, content = http.request(utm_url,
+                                     "GET",
                                      headers={'User-Agent': environ.get('HTTP_USER_AGENT', 'Unknown'),
                                               'Accepts-Language:': environ.get("HTTP_ACCEPT_LANGUAGE",'')}
                                      )
-        # dbgMsg("success")            
+        # dbgMsg("success")
     except httplib2.HttpLib2Error, e:
-        errMsg("fail: %s" % utm_url)            
+        errMsg("fail: %s" % utm_url)
         if environ['GET'].get('utmdebug'):
             raise Exception("Error opening: %s" % utm_url)
         else:
             pass
 
-        
+
 def parse_cookie(cookie):
     """ borrowed from django.http """
     if cookie == '':
@@ -142,28 +142,28 @@ def parse_cookie(cookie):
     cookiedict = {}
     for key in c.keys():
         cookiedict[key] = c.get(key).value
-    return cookiedict        
-        
+    return cookiedict
+
 def track_page_view(environ):
     """
     // Track a page view, updates all the cookies and campaign tracker,
     // makes a server side request to Google Analytics and writes the transparent
     // gif byte data to the response.
-    """    
+    """
     time_tup = time.localtime(time.time() + COOKIE_USER_PERSISTENCE)
-    
-    # set some useful items in environ: 
+
+    # set some useful items in environ:
     environ['COOKIES'] = parse_cookie(environ.get('HTTP_COOKIE', ''))
     environ['GET'] = {}
     for key, value in parse_qsl(environ.get('QUERY_STRING', ''), True):
-        environ['GET'][key] = value # we only have one value per key name, right? :) 
+        environ['GET'][key] = value # we only have one value per key name, right? :)
     x_utmac = environ['GET'].get('x_utmac', None)
-    
+
     domain = environ.get('HTTP_HOST', '')
-            
+
     # Get the referrer from the utmr parameter, this is the referrer to the
     # page that contains the tracking pixel, not the referrer for tracking
-    # pixel.    
+    # pixel.
     document_referer = environ['GET'].get("utmr", "")
     if not document_referer or document_referer == "0":
         document_referer = "-"
@@ -174,19 +174,19 @@ def track_page_view(environ):
     if document_path:
         document_path = unquote(document_path)
 
-    account = environ['GET'].get('utmac', '')      
-    user_agent = environ.get("HTTP_USER_AGENT", '')    
+    account = environ['GET'].get('utmac', '')
+    user_agent = environ.get("HTTP_USER_AGENT", '')
 
     # // Try and get visitor cookie from the request.
     cookie = environ['COOKIES'].get(COOKIE_NAME)
 
     visitor_id = get_visitor_id(environ.get("HTTP_X_DCMGUID", ''), account, user_agent, cookie)
-    
+
     # // Always try and add the cookie to the response.
     cookie = SimpleCookie()
     cookie[COOKIE_NAME] = visitor_id
     morsel = cookie[COOKIE_NAME]
-    morsel['expires'] = time.strftime('%a, %d-%b-%Y %H:%M:%S %Z', time_tup) 
+    morsel['expires'] = time.strftime('%a, %d-%b-%Y %H:%M:%S %Z', time_tup)
     morsel['path'] = COOKIE_PATH
 
     utm_gif_location = "http://www.google-analytics.com/__utm.gif"
@@ -207,7 +207,7 @@ def track_page_view(environ):
                 "&utmcc=__utma%3D999.999.999.999.999.1%3B" + \
                 "&utmvid=" + visitor_id + \
                 "&utmip=" + get_ip(environ.get("REMOTE_ADDR",''))
-        # dbgMsg("utm_url: " + utm_url)    
+        # dbgMsg("utm_url: " + utm_url)
         send_request_to_google_analytics(utm_url, environ)
 
     # // If the debug parameter is on, add a header to the response that contains
@@ -215,7 +215,7 @@ def track_page_view(environ):
     headers = [('Set-Cookie', str(cookie).split(': ')[1])]
     if environ['GET'].get('utmdebug', False):
         headers.append(('X-GA-MOBILE-URL', utm_url))
-    
+
     # Finally write the gif data to the response
     response = write_gif_data()
     response_headers = response['response_headers']
