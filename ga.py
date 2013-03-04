@@ -134,7 +134,7 @@ def parse_cookie(cookie):
         cookiedict[key] = c.get(key).value
     return cookiedict
 
-def track_page_view(environ):
+def track_page_view(url_args, cookies, domain, environ):
     """
     // Track a page view, updates all the cookies and campaign tracker,
     // makes a server side request to Google Analytics and writes the transparent
@@ -142,33 +142,26 @@ def track_page_view(environ):
     """
     time_tup = time.localtime(time.time() + COOKIE_USER_PERSISTENCE)
 
-    # set some useful items in environ:
-    environ['COOKIES'] = parse_cookie(environ.get('HTTP_COOKIE', ''))
-    environ['GET'] = {}
-    for key, value in parse_qsl(environ.get('QUERY_STRING', ''), True):
-        environ['GET'][key] = value # we only have one value per key name, right? :)
-    x_utmac = environ['GET'].get('x_utmac', None)
-
-    domain = environ.get('HTTP_HOST', '')
+    x_utmac = url_args.get('x_utmac', None)
 
     # Get the referrer from the utmr parameter, this is the referrer to the
     # page that contains the tracking pixel, not the referrer for tracking
     # pixel.
-    document_referer = environ['GET'].get("utmr", "")
+    document_referer = url_args.get("utmr", "")
     if not document_referer or document_referer == "0":
         document_referer = "-"
     else:
         document_referer = unquote(document_referer)
 
-    document_path = environ['GET'].get('utmp', "")
+    document_path = url_args.get('utmp', "")
     if document_path:
         document_path = unquote(document_path)
 
-    account = environ['GET'].get('utmac', '')
+    account = url_args.get('utmac', '')
     user_agent = environ.get("HTTP_USER_AGENT", '')
 
     # // Try and get visitor cookie from the request.
-    cookie = environ['COOKIES'].get(COOKIE_NAME)
+    cookie = cookies.get(COOKIE_NAME)
 
     visitor_id = get_visitor_id(environ.get("HTTP_X_DCMGUID", ''), account, user_agent, cookie)
 
@@ -189,8 +182,8 @@ def track_page_view(environ):
                 "utmwv=" + VERSION + \
                 "&utmn=" + get_random_number() + \
                 "&utmhn=" + quote(domain) + \
-                "&utmsr=" + environ['GET'].get('utmsr', '') + \
-                "&utme=" + environ['GET'].get('utme', '') + \
+                "&utmsr=" + url_args.get('utmsr', '') + \
+                "&utme=" + url_args.get('utme', '') + \
                 "&utmr=" + quote(document_referer) + \
                 "&utmp=" + quote(document_path) + \
                 "&utmac=" + utmac + \
@@ -203,7 +196,7 @@ def track_page_view(environ):
     # // If the debug parameter is on, add a header to the response that contains
     # // the url that was used to contact Google Analytics.
     headers = [('Set-Cookie', str(cookie).split(': ')[1])]
-    if environ['GET'].get('utmdebug', False):
+    if url_args.get('utmdebug', False):
         headers.append(('X-GA-MOBILE-URL', utm_url))
 
     # Finally write the gif data to the response
